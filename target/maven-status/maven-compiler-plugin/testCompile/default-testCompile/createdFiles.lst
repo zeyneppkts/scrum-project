@@ -1,0 +1,3 @@
+com\stc\library\dao\InMemoryBookDAO.class
+com\stc\library\model\BookTest.class
+com\stc\library\dao\InMemoryBookDAOTest.class
