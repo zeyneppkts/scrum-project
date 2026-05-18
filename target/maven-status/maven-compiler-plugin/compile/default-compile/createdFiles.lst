@@ -1,0 +1,5 @@
+com\stc\library\controller\AddBookController.class
+com\stc\library\model\Book.class
+com\stc\library\dao\DatabaseConnection.class
+com\stc\library\dao\IBookRepository.class
+com\stc\library\dao\SQLiteBookDAO.class
