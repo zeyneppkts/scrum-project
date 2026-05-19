@@ -6,8 +6,14 @@ import com.stc.library.model.Book; // Veritabanı gelene kadar bunu kullanıyoru
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import java.io.IOException;
 
 public class AddBookController {
 
@@ -80,5 +86,19 @@ public class AddBookController {
         publisherField.clear();
         copiesField.clear();
         isbnField.clear();
+    }
+
+    @FXML
+    private void handleShowBookList(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/com/stc/library/views/ListBooks.fxml"));
+            Scene scene = new Scene(root, 800, 600);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setTitle("Library Books List");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open the book list screen.");
+        }
     }
 }

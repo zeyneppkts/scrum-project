@@ -2,7 +2,10 @@ package com.stc.library.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.stc.library.model.Book;
@@ -34,6 +37,27 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public List<Book> findAll() {
-        return null;
+        List<Book> bookList = new ArrayList<>();
+        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn FROM books";
+
+        try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Book book = new Book(
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("published_year"),
+                        rs.getInt("edition"),
+                        rs.getString("publisher"),
+                        rs.getInt("copies"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("isbn")
+                );
+                bookList.add(book);
+            }
+        } catch (SQLException e) {
+            System.err.println("Database Error: Failed to load the book list. " + e.getMessage());
+        }
+
+        return bookList;
     }
 }

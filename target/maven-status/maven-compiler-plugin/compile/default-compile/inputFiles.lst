@@ -1,6 +1,7 @@
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\controller\AddBookController.java
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\dao\SQLiteBookDAO.java
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\dao\DatabaseConnection.java
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\dao\IBookRepository.java
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\model\Book.java
-C:\Users\Zeynep\git\scrum-project\src\main\java\com\stc\library\MainApp.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\controller\AddBookController.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\model\Book.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\dao\IBookRepository.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\dao\SQLiteBookDAO.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\MainApp.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\controller\ListBooksController.java
+d:\Zeynep\ders-doküman\3-2\software engineering\scrum-project\src\main\java\com\stc\library\dao\DatabaseConnection.java
