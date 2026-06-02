@@ -10,6 +10,7 @@ public class Book {
     private int copyNumber;
     private boolean isAvailable;
     private String isbn;
+    private int borrowCount;
 
     public Book(String title, String author, int publicationYear, int edition, String publisher, int copyNumber, boolean isAvailable, String isbn) {
         validateTitle(title);
@@ -20,6 +21,7 @@ public class Book {
         validateCopyNumber(copyNumber);
         this.isAvailable = isAvailable;
         this.isbn = isbn;
+        this.borrowCount = 0;
     }
 
     public String getTitle() {
@@ -54,6 +56,17 @@ public class Book {
         return isAvailable;
     }
 
+    public int getBorrowCount() {
+        return borrowCount;
+    }
+
+    public void setBorrowCount(int borrowCount) {
+        if (borrowCount < 0) {
+            throw new IllegalArgumentException("Borrow count cannot be negative.");
+        }
+        this.borrowCount = borrowCount;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -75,7 +88,7 @@ public class Book {
     }
 
     public void setCopyNumber(int copyNumber) {
-        this.copyNumber = copyNumber;
+        validateCopyNumber(copyNumber);
     }
 
     public void setAvailable(boolean available) {
@@ -113,6 +126,35 @@ public class Book {
             throw new IllegalArgumentException("Author cannot be null or empty.");
         }
         this.author = author;
+    }
+
+/// Borrow A Book -- MELEK
+
+    /**
+     * Borrows the given number of copies of this book.
+     * Verifies availability before borrowing, decreases the available copies,
+     * updates the borrow statistics and marks the book as unavailable when no
+     * copies are left.
+     *
+     * @param numberOfBorrowedCopies how many copies to borrow (must be positive)
+     * @throws IllegalArgumentException if the amount is not positive or there
+     *                                  are not enough copies available
+     */
+    public void borrowABook(int numberOfBorrowedCopies) {
+        if (numberOfBorrowedCopies <= 0) {
+            throw new IllegalArgumentException("Number of copies to borrow must be positive.");
+        }
+        if (!isAvailable || this.copyNumber < numberOfBorrowedCopies) {
+            throw new IllegalArgumentException(
+                    "Not enough copies available to borrow. Available copies: " + this.copyNumber + ".");
+        }
+
+        setCopyNumber(this.copyNumber - numberOfBorrowedCopies);
+        this.borrowCount += numberOfBorrowedCopies;
+
+        if (this.copyNumber == 0) {
+            this.isAvailable = false;
+        }
     }
 
 }

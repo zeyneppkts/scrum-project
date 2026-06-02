@@ -18,4 +18,23 @@ public class InMemoryBookDAO implements IBookRepository {
     public List<Book> findAll() {
         return books;
     }
+
+    @Override
+    public Book findByIsbn(String isbn) {
+        return books.stream()
+                .filter(book -> book.getIsbn() != null && book.getIsbn().equals(isbn))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public void update(Book book) {
+        for (int i = 0; i < books.size(); i++) {
+            if (books.get(i).getIsbn() != null && books.get(i).getIsbn().equals(book.getIsbn())) {
+                books.set(i, book);
+                System.out.println("Book is updated in memory: " + book.getTitle());
+                return;
+            }
+        }
+    }
 }
