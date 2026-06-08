@@ -91,6 +91,55 @@ public class SQLiteBookDAO implements IBookRepository {
         }
     }
 
+    @Override
+    public Book findByISBN(String isbn) {
+        String sql = "SELECT * FROM books WHERE isbn = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, isbn);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return new Book(
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getInt("published_year"),
+                    rs.getInt("edition"),
+                    rs.getString("publisher"),
+                    rs.getInt("copies"),
+                    rs.getBoolean("is_available"),
+                    rs.getString("isbn")
+                );
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Database Error: Failed to find book by ISBN. " + e.getMessage());
+        }
+        
+        return null; 
+    }
+
+    @Override
+    public void updateBook(Book book) {
+        String sql = "UPDATE books SET copies = ?, is_available = ? WHERE isbn = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, book.getCopyNumber());
+            pstmt.setBoolean(2, book.isAvailable());
+            pstmt.setString(3, book.getIsbn());
+            
+            pstmt.executeUpdate();
+            System.out.println("Success: Book stock updated for ISBN: " + book.getIsbn());
+            
+        } catch (SQLException e) {
+            System.err.println("Database Error: Failed to update book. " + e.getMessage());
+        }
+    }
+
     private Book mapRowToBook(ResultSet rs) throws SQLException {
         Book book = new Book(
                 rs.getString("title"),

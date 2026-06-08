@@ -157,4 +157,12 @@ public class Book {
         }
     }
 
+    public void returnABook(int numberOfReturnedCopies) {
+        if (numberOfReturnedCopies <= 0) {
+            throw new IllegalArgumentException("Number of copies to return must be positive.");
+        }
+        setCopyNumber(this.copyNumber + numberOfReturnedCopies);
+        this.isAvailable = true;
+    }
+
 }

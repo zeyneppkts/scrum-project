@@ -94,4 +94,24 @@ public class BookTest {
         assertThrows(IllegalArgumentException.class, () -> book.borrowABook(0));
         assertThrows(IllegalArgumentException.class, () -> book.borrowABook(-2));
     }
+
+    @Test
+    public void testReturnBookIncreasesCopies() {
+        Book book = new Book("Return Guide", "Author", 2023, 1, "Pub", 5, true, "111222");
+        
+        book.returnABook(3);
+        
+        assertEquals(8, book.getCopyNumber());
+    }
+
+    @Test
+    public void testReturnBookNegativeCopiesThrowsException() {
+        Book book = new Book("Return Guide", "Author", 2023, 1, "Pub", 5, true, "111222");
+        
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            book.returnABook(-2);
+        });
+        
+        assertEquals("Number of copies to return must be positive.", exception.getMessage());
+    }
 }

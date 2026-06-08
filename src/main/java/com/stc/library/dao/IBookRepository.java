@@ -24,4 +24,7 @@ public interface IBookRepository {
      * @param book the book whose current state should be saved
      */
     void update(Book book);
+
+    Book findByISBN(String isbn);
+    void updateBook(Book book);
 }

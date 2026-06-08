@@ -67,6 +67,29 @@ public class SQLiteBookDAOTest {
         assertTrue(reloaded.isAvailable(), "Book should remain available with one copy left.");
     }
 
+    @Test
+    public void testUpdateBookIntegration() {
+        String testIsbn = "RETURN-TEST-777";
+        Book testBook = new Book("Update Target", "Tester", 2024, 1, "STC", 2, true, testIsbn);
+        dao.save(testBook);
+
+        Book savedBook = dao.findByISBN(testIsbn);
+        savedBook.returnABook(3); // Stok 2 + 3 = 5 olmalı
+        dao.updateBook(savedBook);
+
+        Book updatedBook = dao.findByISBN(testIsbn);
+        assertNotNull(updatedBook, "Book should exist in database");
+        assertEquals(5, updatedBook.getCopyNumber(), "Database stock was not updated correctly!");
+
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("DELETE FROM books WHERE isbn = '" + testIsbn + "'");
+        } catch (Exception e) {
+            fail("Cleanup failed: " + e.getMessage());
+        }
+    }
+
     @AfterAll
     public static void tearDown() {
         try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement()) {
