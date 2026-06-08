@@ -8,6 +8,7 @@ public class Book {
     private int edition;
     private String publisher;
     private int copyNumber;
+    private int totalCopies;
     private boolean isAvailable;
     private String isbn;
     private int borrowCount;
@@ -22,6 +23,7 @@ public class Book {
         this.isAvailable = isAvailable;
         this.isbn = isbn;
         this.borrowCount = 0;
+        this.totalCopies = copyNumber; 
     }
 
     public String getTitle() {
@@ -50,6 +52,10 @@ public class Book {
 
     public String getIsbn() {
         return isbn;
+    }
+
+    public int getTotalCopies() {
+        return totalCopies;
     }
 
     public boolean isAvailable() {
@@ -97,6 +103,13 @@ public class Book {
 
     public void setIsbn(String isbn) {
         this.isbn = isbn;
+    }
+
+    public void setTotalCopies(int totalCopies) {
+        if (totalCopies < 0) {
+            throw new IllegalArgumentException("Total copies cannot be negative.");
+        }
+        this.totalCopies = totalCopies;
     }
 
     private void validatePublicationYear(int publicationYear) {
@@ -161,6 +174,12 @@ public class Book {
         if (numberOfReturnedCopies <= 0) {
             throw new IllegalArgumentException("Number of copies to return must be positive.");
         }
+        
+        if (this.copyNumber + numberOfReturnedCopies > this.totalCopies) {
+            int maxAllowedToReturn = this.totalCopies - this.copyNumber;
+            throw new IllegalArgumentException("Cannot return more copies than the total owned by the library. Max allowed to return: " + maxAllowedToReturn);
+        }
+
         setCopyNumber(this.copyNumber + numberOfReturnedCopies);
         this.isAvailable = true;
     }

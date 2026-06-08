@@ -1,8 +1,9 @@
 package com.stc.library.dao;
 
-import com.stc.library.model.Book;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.stc.library.model.Book;
 
 public class InMemoryBookDAO implements IBookRepository {
 
@@ -35,6 +36,24 @@ public class InMemoryBookDAO implements IBookRepository {
                 System.out.println("Book is updated in memory: " + book.getTitle());
                 return;
             }
+        }
+    }
+
+    @Override
+    public Book findByISBN(String isbn) {
+        for (Book book : books) {
+            if (book.getIsbn().equals(isbn)) {
+                return book;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void updateBook(Book book) {
+        Book existingBook = findByISBN(book.getIsbn());
+        if (existingBook != null) {
+            existingBook.setCopyNumber(book.getCopyNumber());
         }
     }
 }

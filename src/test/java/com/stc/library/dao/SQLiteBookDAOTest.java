@@ -1,15 +1,17 @@
 package com.stc.library.dao;
 
-import com.stc.library.model.Book;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import com.stc.library.model.Book;
 import com.stc.library.service.BorrowService;
 
@@ -74,16 +76,14 @@ public class SQLiteBookDAOTest {
         dao.save(testBook);
 
         Book savedBook = dao.findByISBN(testIsbn);
-        savedBook.returnABook(3); // Stok 2 + 3 = 5 olmalı
+        savedBook.returnABook(3);
         dao.updateBook(savedBook);
 
         Book updatedBook = dao.findByISBN(testIsbn);
         assertNotNull(updatedBook, "Book should exist in database");
         assertEquals(5, updatedBook.getCopyNumber(), "Database stock was not updated correctly!");
 
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement()) {
+        try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement()) {
             stmt.execute("DELETE FROM books WHERE isbn = '" + testIsbn + "'");
         } catch (Exception e) {
             fail("Cleanup failed: " + e.getMessage());
