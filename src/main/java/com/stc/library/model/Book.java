@@ -12,6 +12,8 @@ public class Book {
     private boolean isAvailable;
     private String isbn;
     private int borrowCount;
+    private double averageRating = 0.0;
+    private int ratingCount = 0;
 
     public Book(String title, String author, int publicationYear, int edition, String publisher, int copyNumber, boolean isAvailable, String isbn) {
         validateTitle(title);
@@ -23,7 +25,7 @@ public class Book {
         this.isAvailable = isAvailable;
         this.isbn = isbn;
         this.borrowCount = 0;
-        this.totalCopies = copyNumber; 
+        this.totalCopies = copyNumber;
     }
 
     public String getTitle() {
@@ -64,6 +66,14 @@ public class Book {
 
     public int getBorrowCount() {
         return borrowCount;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public int getRatingCount() {
+        return ratingCount;
     }
 
     public void setBorrowCount(int borrowCount) {
@@ -112,6 +122,20 @@ public class Book {
         this.totalCopies = totalCopies;
     }
 
+    public void setAverageRating(double averageRating) {
+        if (averageRating < 0.0 || averageRating > 5.0) {
+            throw new IllegalArgumentException("Average rating must be between 0.0 and 5.0.");
+        }
+        this.averageRating = averageRating;
+    }
+
+    public void setRatingCount(int ratingCount) {
+        if (ratingCount < 0) {
+            throw new IllegalArgumentException("Rating count cannot be negative.");
+        }
+        this.ratingCount = ratingCount;
+    }
+
     private void validatePublicationYear(int publicationYear) {
         int currentYear = java.time.Year.now().getValue();
         if (publicationYear < 1450 || publicationYear > currentYear) {
@@ -141,7 +165,7 @@ public class Book {
         this.author = author;
     }
 
-/// Borrow A Book -- MELEK
+    /// Borrow A Book -- MELEK
 
     /**
      * Borrows the given number of copies of this book.
@@ -174,7 +198,7 @@ public class Book {
         if (numberOfReturnedCopies <= 0) {
             throw new IllegalArgumentException("Number of copies to return must be positive.");
         }
-        
+
         if (this.copyNumber + numberOfReturnedCopies > this.totalCopies) {
             int maxAllowedToReturn = this.totalCopies - this.copyNumber;
             throw new IllegalArgumentException("Cannot return more copies than the total owned by the library. Max allowed to return: " + maxAllowedToReturn);
@@ -182,6 +206,15 @@ public class Book {
 
         setCopyNumber(this.copyNumber + numberOfReturnedCopies);
         this.isAvailable = true;
+    }
+
+    public void addRating(double newRating) {
+        if (newRating < 0.0 || newRating > 5.0) {
+            throw new IllegalArgumentException("Rating must be between 0.0 and 5.0.");
+        }
+        double totalScore = (this.averageRating * this.ratingCount) + newRating;
+        this.ratingCount++;
+        this.averageRating = totalScore / this.ratingCount;
     }
 
 }

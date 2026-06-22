@@ -21,18 +21,21 @@ public class DatabaseConnection {
     }
 
     public static void initializeDatabase() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS books ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "title TEXT NOT NULL, "
-                + "author TEXT NOT NULL, "
-                + "published_year INTEGER, "
-                + "edition INTEGER, "
-                + "publisher TEXT, "
-                + "copies INTEGER NOT NULL, "
-                + "is_available BOOLEAN, "
-                + "isbn TEXT, "
-                + "borrow_count INTEGER NOT NULL DEFAULT 0"
-                + ");";
+        String createTableSQL = """
+                CREATE TABLE IF NOT EXISTS books (
+                    isbn TEXT PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    author TEXT NOT NULL,
+                    published_year INTEGER NOT NULL,
+                    edition INTEGER,
+                    publisher TEXT,
+                    copies INTEGER NOT NULL,
+                    is_available BOOLEAN NOT NULL,
+                    borrow_count INTEGER DEFAULT 0,
+                    average_rating REAL DEFAULT 0.0,
+                    rating_count INTEGER DEFAULT 0
+                );
+                """;
 
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
             stmt.execute(createTableSQL);
@@ -44,14 +47,13 @@ public class DatabaseConnection {
     }
 
     /**
-     * Adds the {@code borrow_count} column to databases that were created before
-     * the borrow feature existed. New databases already include the column, so
-     * this is a no-op for them.
+     * Adds the {@code borrow_count} column to databases that were created
+     * before the borrow feature existed. New databases already include the
+     * column, so this is a no-op for them.
      */
     private static void ensureBorrowCountColumn(Connection conn) {
         boolean columnExists = false;
-        try (Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery("PRAGMA table_info(books)")) {
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("PRAGMA table_info(books)")) {
             while (rs.next()) {
                 if ("borrow_count".equalsIgnoreCase(rs.getString("name"))) {
                     columnExists = true;

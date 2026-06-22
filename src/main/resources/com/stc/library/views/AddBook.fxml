@@ -45,6 +45,5 @@
 
     <HBox alignment="CENTER" spacing="10.0">
         <Button text="Save Book" onAction="#handleSaveBook" prefWidth="150" />
-        <Button text="View All Books" onAction="#handleShowBookList" prefWidth="150" />
     </HBox>
 </VBox>

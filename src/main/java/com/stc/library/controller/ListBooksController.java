@@ -1,9 +1,12 @@
 package com.stc.library.controller;
 
+import java.io.IOException;
+
 import com.stc.library.dao.IBookRepository;
 import com.stc.library.dao.SQLiteBookDAO;
 import com.stc.library.model.Book;
 import com.stc.library.service.BorrowService;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,8 +20,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class ListBooksController {
 
@@ -61,7 +62,7 @@ public class ListBooksController {
         refreshTable();
     }
 
-    private void refreshTable() {
+    public void refreshTable() {
         ObservableList<Book> books = FXCollections.observableArrayList(repository.findAll());
         bookTable.setItems(books);
     }
@@ -80,8 +81,8 @@ public class ListBooksController {
             refreshTable();
             showAlert(Alert.AlertType.INFORMATION, "Success",
                     "You borrowed \"" + updatedBook.getTitle() + "\".\n"
-                            + "Remaining copies: " + updatedBook.getCopyNumber() + "\n"
-                            + "Total times borrowed: " + updatedBook.getBorrowCount());
+                    + "Remaining copies: " + updatedBook.getCopyNumber() + "\n"
+                    + "Total times borrowed: " + updatedBook.getBorrowCount());
         } catch (IllegalArgumentException e) {
             showAlert(Alert.AlertType.ERROR, "Borrow Error", e.getMessage());
         }
@@ -107,5 +108,39 @@ public class ListBooksController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleRateBook(ActionEvent event) {
+        Book selectedBook = bookTable.getSelectionModel().getSelectedItem();
+
+        if (selectedBook == null) {
+            showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a book to rate.");
+            return;
+        }
+
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog("5");
+        dialog.setTitle("Rate Book");
+        dialog.setHeaderText("Rating for: " + selectedBook.getTitle());
+        dialog.setContentText("Please enter a rating between 1 and 5:");
+
+        dialog.showAndWait().ifPresent(ratingString -> {
+            try {
+                double rating = Double.parseDouble(ratingString);
+
+                selectedBook.addRating(rating);
+
+                repository.update(selectedBook);
+
+                refreshTable();
+
+                showAlert(Alert.AlertType.INFORMATION, "Success", "You rated the book " + rating + " stars. New average: " + String.format("%.1f", selectedBook.getAverageRating()));
+
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Input Error", "Please enter a valid number.");
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.ERROR, "Logic Error", e.getMessage());
+            }
+        });
     }
 }

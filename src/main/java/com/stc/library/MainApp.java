@@ -15,6 +15,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         DatabaseConnection.initializeDatabase();
+
         Parent addBookRoot = FXMLLoader.load(getClass().getResource("/com/stc/library/views/AddBook.fxml"));
         Tab addBookTab = new Tab("Register a New Book", addBookRoot);
         addBookTab.setClosable(false);
@@ -23,14 +24,33 @@ public class MainApp extends Application {
         Tab returnBookTab = new Tab("Return a Book", returnBookRoot);
         returnBookTab.setClosable(false);
 
-        Parent viewBooksRoot = FXMLLoader.load(getClass().getResource("/com/stc/library/views/ListBooks.fxml"));
-        Tab viewBooksTab = new Tab("View All Books", viewBooksRoot);
-        viewBooksTab.setClosable(false);
+        FXMLLoader listLoader = new FXMLLoader(getClass().getResource("/com/stc/library/views/ListBooks.fxml"));
+        Parent listBooksRoot = listLoader.load();
+        Tab listBooksTab = new Tab("View All Books", listBooksRoot);
+        listBooksTab.setClosable(false);
 
+        com.stc.library.controller.ListBooksController listController = listLoader.getController();
+        listBooksTab.setOnSelectionChanged(event -> {
+            if (listBooksTab.isSelected()) {
+                listController.refreshTable();
+            }
+        });
+
+        FXMLLoader statsLoader = new FXMLLoader(getClass().getResource("/com/stc/library/views/BookStatistics.fxml"));
+        Parent statsRoot = statsLoader.load();
+        Tab statsTab = new Tab("Book Statistics", statsRoot);
+        statsTab.setClosable(false);
+
+        com.stc.library.controller.BookStatisticsController statsController = statsLoader.getController();
+        statsTab.setOnSelectionChanged(event -> {
+            if (statsTab.isSelected()) {
+                statsController.refreshStatistics();
+            }
+        });
         TabPane rootPane = new TabPane();
-        rootPane.getTabs().addAll(addBookTab, viewBooksTab, returnBookTab);
+        rootPane.getTabs().addAll(addBookTab, returnBookTab, listBooksTab, statsTab);
 
-        Scene scene = new Scene(rootPane, 700, 600);
+        Scene scene = new Scene(rootPane, 900, 650);
 
         stage.setTitle("STC Library Management System - Dashboard");
         stage.setScene(scene);

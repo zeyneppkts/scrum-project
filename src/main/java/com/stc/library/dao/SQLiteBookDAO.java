@@ -39,7 +39,7 @@ public class SQLiteBookDAO implements IBookRepository {
     @Override
     public List<Book> findAll() {
         List<Book> bookList = new ArrayList<>();
-        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count FROM books";
+        String sql = "SELECT * FROM books";
 
         try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -54,8 +54,7 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public Book findByIsbn(String isbn) {
-        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count FROM books WHERE isbn = ?";
-
+        String sql = "SELECT * FROM books WHERE isbn = ?";
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, isbn);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -72,13 +71,15 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public void update(Book book) {
-        String sql = "UPDATE books SET copies = ?, is_available = ?, borrow_count = ? WHERE isbn = ?";
+        String sql = "UPDATE books SET copies = ?, is_available = ?, borrow_count = ?, average_rating = ?, rating_count = ? WHERE isbn = ?";
 
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, book.getCopyNumber());
             pstmt.setBoolean(2, book.isAvailable());
             pstmt.setInt(3, book.getBorrowCount());
-            pstmt.setString(4, book.getIsbn());
+            pstmt.setDouble(4, book.getAverageRating());
+            pstmt.setInt(5, book.getRatingCount());
+            pstmt.setString(6, book.getIsbn());
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
@@ -94,50 +95,35 @@ public class SQLiteBookDAO implements IBookRepository {
     @Override
     public Book findByISBN(String isbn) {
         String sql = "SELECT * FROM books WHERE isbn = ?";
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setString(1, isbn);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return new Book(
-                    rs.getString("title"),
-                    rs.getString("author"),
-                    rs.getInt("published_year"),
-                    rs.getInt("edition"),
-                    rs.getString("publisher"),
-                    rs.getInt("copies"),
-                    rs.getBoolean("is_available"),
-                    rs.getString("isbn")
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("published_year"),
+                        rs.getInt("edition"),
+                        rs.getString("publisher"),
+                        rs.getInt("copies"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("isbn")
                 );
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Database Error: Failed to find book by ISBN. " + e.getMessage());
         }
-        
-        return null; 
+
+        return null;
     }
 
     @Override
     public void updateBook(Book book) {
-        String sql = "UPDATE books SET copies = ?, is_available = ? WHERE isbn = ?";
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, book.getCopyNumber());
-            pstmt.setBoolean(2, book.isAvailable());
-            pstmt.setString(3, book.getIsbn());
-            
-            pstmt.executeUpdate();
-            System.out.println("Success: Book stock updated for ISBN: " + book.getIsbn());
-            
-        } catch (SQLException e) {
-            System.err.println("Database Error: Failed to update book. " + e.getMessage());
-        }
+        update(book);
     }
 
     private Book mapRowToBook(ResultSet rs) throws SQLException {
@@ -152,6 +138,71 @@ public class SQLiteBookDAO implements IBookRepository {
                 rs.getString("isbn")
         );
         book.setBorrowCount(rs.getInt("borrow_count"));
+        book.setAverageRating(rs.getDouble("average_rating"));
+        book.setRatingCount(rs.getInt("rating_count"));
         return book;
     }
+
+    @Override
+    public List<Book> getTopBorrowedBooks(int limit) {
+        List<Book> topBooks = new ArrayList<>();
+        String sql = "SELECT * FROM books ORDER BY borrow_count DESC LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, limit);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Book book = new Book(
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("published_year"),
+                        rs.getInt("edition"),
+                        rs.getString("publisher"),
+                        rs.getInt("copies"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("isbn")
+                );
+                book.setBorrowCount(rs.getInt("borrow_count"));
+                book.setAverageRating(rs.getDouble("average_rating"));
+                topBooks.add(book);
+            }
+        } catch (SQLException e) {
+            System.err.println("İstatistik çekilirken hata: " + e.getMessage());
+        }
+        return topBooks;
+    }
+
+    @Override
+    public List<Book> getTopRatedBooks(int limit) {
+        List<Book> topBooks = new ArrayList<>();
+        String sql = "SELECT * FROM books ORDER BY average_rating DESC LIMIT ?";
+
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, limit);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Book book = new Book(
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("published_year"),
+                        rs.getInt("edition"),
+                        rs.getString("publisher"),
+                        rs.getInt("copies"),
+                        rs.getBoolean("is_available"),
+                        rs.getString("isbn")
+                );
+                book.setBorrowCount(rs.getInt("borrow_count"));
+                book.setAverageRating(rs.getDouble("average_rating"));
+                topBooks.add(book);
+            }
+        } catch (SQLException e) {
+            System.err.println("İstatistik çekilirken hata: " + e.getMessage());
+        }
+        return topBooks;
+    }
+
 }
