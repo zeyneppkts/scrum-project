@@ -14,7 +14,7 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public void save(Book book) {
-        String sql = "INSERT INTO books (title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO books (title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count, avg_rating, rating_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -27,6 +27,8 @@ public class SQLiteBookDAO implements IBookRepository {
             pstmt.setBoolean(7, book.isAvailable());
             pstmt.setString(8, book.getIsbn());
             pstmt.setInt(9, book.getBorrowCount());
+            pstmt.setDouble(10, book.getAverageRating());
+            pstmt.setInt(11, book.getRatingCount());
 
             pstmt.executeUpdate();
             System.out.println("Success: Book saved to database: " + book.getTitle());
@@ -39,7 +41,7 @@ public class SQLiteBookDAO implements IBookRepository {
     @Override
     public List<Book> findAll() {
         List<Book> bookList = new ArrayList<>();
-        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count FROM books";
+        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count, avg_rating, rating_count FROM books";
 
         try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -54,7 +56,7 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public Book findByIsbn(String isbn) {
-        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count FROM books WHERE isbn = ?";
+        String sql = "SELECT title, author, published_year, edition, publisher, copies, is_available, isbn, borrow_count, avg_rating, rating_count FROM books WHERE isbn = ?";
 
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, isbn);
@@ -72,13 +74,15 @@ public class SQLiteBookDAO implements IBookRepository {
 
     @Override
     public void update(Book book) {
-        String sql = "UPDATE books SET copies = ?, is_available = ?, borrow_count = ? WHERE isbn = ?";
+        String sql = "UPDATE books SET copies = ?, is_available = ?, borrow_count = ?, avg_rating = ?, rating_count = ? WHERE isbn = ?";
 
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, book.getCopyNumber());
             pstmt.setBoolean(2, book.isAvailable());
             pstmt.setInt(3, book.getBorrowCount());
-            pstmt.setString(4, book.getIsbn());
+            pstmt.setDouble(4, book.getAverageRating());
+            pstmt.setInt(5, book.getRatingCount());
+            pstmt.setString(6, book.getIsbn());
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows == 0) {
@@ -102,7 +106,7 @@ public class SQLiteBookDAO implements IBookRepository {
             ResultSet rs = pstmt.executeQuery();
             
             if (rs.next()) {
-                return new Book(
+                Book book = new Book(
                     rs.getString("title"),
                     rs.getString("author"),
                     rs.getInt("published_year"),
@@ -112,6 +116,10 @@ public class SQLiteBookDAO implements IBookRepository {
                     rs.getBoolean("is_available"),
                     rs.getString("isbn")
                 );
+                book.setBorrowCount(rs.getInt("borrow_count"));
+                book.setAverageRating(rs.getDouble("avg_rating"));
+                book.setRatingCount(rs.getInt("rating_count"));
+                return book;
             }
             
         } catch (SQLException e) {
@@ -140,6 +148,23 @@ public class SQLiteBookDAO implements IBookRepository {
         }
     }
 
+    @Override
+    public void deleteByIsbn(String isbn) {
+        String sql = "DELETE FROM books WHERE isbn = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, isbn);
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                System.err.println("Database Error: No book found to delete for ISBN " + isbn);
+            } else {
+                System.out.println("Success: Book deleted from database for ISBN: " + isbn);
+            }
+        } catch (SQLException e) {
+            System.err.println("Database Error: Failed to delete book. " + e.getMessage());
+        }
+    }
+
     private Book mapRowToBook(ResultSet rs) throws SQLException {
         Book book = new Book(
                 rs.getString("title"),
@@ -152,6 +177,12 @@ public class SQLiteBookDAO implements IBookRepository {
                 rs.getString("isbn")
         );
         book.setBorrowCount(rs.getInt("borrow_count"));
+        try {
+            book.setAverageRating(rs.getDouble("avg_rating"));
+            book.setRatingCount(rs.getInt("rating_count"));
+        } catch (SQLException e) {
+            // If the columns aren't present (older DB), ignore and keep defaults
+        }
         return book;
     }
 }

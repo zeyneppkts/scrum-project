@@ -12,6 +12,8 @@ public class Book {
     private boolean isAvailable;
     private String isbn;
     private int borrowCount;
+    private double averageRating;
+    private int ratingCount;
 
     public Book(String title, String author, int publicationYear, int edition, String publisher, int copyNumber, boolean isAvailable, String isbn) {
         validateTitle(title);
@@ -23,7 +25,38 @@ public class Book {
         this.isAvailable = isAvailable;
         this.isbn = isbn;
         this.borrowCount = 0;
+        this.averageRating = 0.0;
+        this.ratingCount = 0;
         this.totalCopies = copyNumber; 
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public int getRatingCount() {
+        return ratingCount;
+    }
+
+    /**
+     * Adds a new integer rating (1-5) and updates the running average.
+     */
+    public void addRating(int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5.");
+        }
+        double total = this.averageRating * this.ratingCount;
+        total += rating;
+        this.ratingCount += 1;
+        this.averageRating = total / this.ratingCount;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public void setRatingCount(int ratingCount) {
+        this.ratingCount = ratingCount;
     }
 
     public String getTitle() {
@@ -182,6 +215,20 @@ public class Book {
 
         setCopyNumber(this.copyNumber + numberOfReturnedCopies);
         this.isAvailable = true;
+    }
+
+    public void reduceCopies(int numberOfRemovedCopies) {
+        if (numberOfRemovedCopies <= 0) {
+            throw new IllegalArgumentException("Number of copies to reduce must be positive.");
+        }
+        if (numberOfRemovedCopies > this.copyNumber) {
+            throw new IllegalArgumentException("Cannot reduce more copies than are currently available. Available copies: " + this.copyNumber + ".");
+        }
+
+        setCopyNumber(this.copyNumber - numberOfRemovedCopies);
+        if (this.copyNumber == 0) {
+            this.isAvailable = false;
+        }
     }
 
 }

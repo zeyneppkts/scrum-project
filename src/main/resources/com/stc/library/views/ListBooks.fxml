@@ -31,11 +31,15 @@
             <TableColumn fx:id="availableColumn" text="Available" prefWidth="70.0" />
             <TableColumn fx:id="borrowCountColumn" text="Borrowed" prefWidth="80.0" />
             <TableColumn fx:id="isbnColumn" text="ISBN" prefWidth="140.0" />
+            <TableColumn fx:id="ratingColumn" text="Rating" prefWidth="80.0" />
         </columns>
     </TableView>
 
     <HBox alignment="CENTER" spacing="10.0">
-        <Button text="Borrow Selected Book" onAction="#handleBorrowBook" prefWidth="180" />
+        <Button text="Borrow Selected Book" onAction="#handleBorrowBook" prefWidth="160" />
+        <Button text="Reduce Copies" onAction="#handleReduceCopies" prefWidth="140" />
+        <Button text="Remove Selected Book" onAction="#handleRemoveBook" prefWidth="160" />
+        <Button text="Rate Selected Book" onAction="#handleRateBook" prefWidth="160" />
         <Button text="Back to Add Book" onAction="#handleBackToAddBook" prefWidth="180" />
     </HBox>
 </VBox>

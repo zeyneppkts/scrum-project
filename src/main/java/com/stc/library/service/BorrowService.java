@@ -52,4 +52,21 @@ public class BorrowService {
 
         return book;
     }
+
+    /**
+     * Adds a rating (1-5) to the book identified by ISBN and persists it.
+     * @param isbn the book ISBN
+     * @param rating integer rating between 1 and 5
+     * @return updated Book
+     */
+    public Book rateBook(String isbn, int rating) {
+        Book book = repository.findByIsbn(isbn);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found for ISBN: " + isbn);
+        }
+
+        book.addRating(rating);
+        repository.update(book);
+        return book;
+    }
 }

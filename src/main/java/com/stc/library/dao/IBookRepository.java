@@ -27,4 +27,5 @@ public interface IBookRepository {
 
     Book findByISBN(String isbn);
     void updateBook(Book book);
+    void deleteByIsbn(String isbn);
 }

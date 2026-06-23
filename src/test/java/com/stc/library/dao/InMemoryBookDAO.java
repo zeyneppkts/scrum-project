@@ -56,4 +56,10 @@ public class InMemoryBookDAO implements IBookRepository {
             existingBook.setCopyNumber(book.getCopyNumber());
         }
     }
+
+    @Override
+    public void deleteByIsbn(String isbn) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteByIsbn'");
+    }
 }
