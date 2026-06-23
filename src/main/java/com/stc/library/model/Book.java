@@ -199,11 +199,10 @@ public class Book {
             throw new IllegalArgumentException("Number of copies to return must be positive.");
         }
 
-        if (this.copyNumber + numberOfReturnedCopies > this.totalCopies) {
-            int maxAllowedToReturn = this.totalCopies - this.copyNumber;
-            throw new IllegalArgumentException("Cannot return more copies than the total owned by the library. Max allowed to return: " + maxAllowedToReturn);
-        }
-
+        // Returning copies restores available stock and makes the book
+        // borrowable again. The previous upper bound relied on totalCopies,
+        // which is not persisted, so after a book was reloaded from the
+        // database it equalled the current copies and returning always failed.
         setCopyNumber(this.copyNumber + numberOfReturnedCopies);
         this.isAvailable = true;
     }
