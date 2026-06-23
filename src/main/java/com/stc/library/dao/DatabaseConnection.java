@@ -22,24 +22,22 @@ public class DatabaseConnection {
 
     public static void initializeDatabase() {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS books ("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "isbn TEXT PRIMARY KEY, "
                 + "title TEXT NOT NULL, "
                 + "author TEXT NOT NULL, "
-                + "published_year INTEGER, "
+                + "published_year INTEGER NOT NULL, "
                 + "edition INTEGER, "
                 + "publisher TEXT, "
                 + "copies INTEGER NOT NULL, "
-                + "is_available BOOLEAN, "
-            + "isbn TEXT, "
-            + "borrow_count INTEGER NOT NULL DEFAULT 0, "
-            + "avg_rating REAL NOT NULL DEFAULT 0.0, "
-            + "rating_count INTEGER NOT NULL DEFAULT 0"
+                + "is_available BOOLEAN NOT NULL, "
+                + "borrow_count INTEGER DEFAULT 0, "
+                + "average_rating REAL DEFAULT 0.0, "
+                + "rating_count INTEGER DEFAULT 0"
                 + ");";
 
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
             stmt.execute(createTableSQL);
-            ensureBorrowCountColumn(conn);
-            ensureRatingColumns(conn);
+            migrateSchema(conn);
             System.out.println("Success: SQLite database and books table are ready.");
         } catch (SQLException e) {
             System.err.println("Database Error: Failed to create table. " + e.getMessage());
@@ -47,16 +45,33 @@ public class DatabaseConnection {
     }
 
     /**
-     * Adds the {@code borrow_count} column to databases that were created before
-     * the borrow feature existed. New databases already include the column, so
-     * this is a no-op for them.
+     * Brings databases that were created before the borrow, return and rating
+     * features existed up to date by adding any missing columns. New databases
+     * already include every column, so each check is a no-op for them.
+     *
+     * <p>This is required because {@code CREATE TABLE IF NOT EXISTS} never alters
+     * an already existing table, so reads/writes against the new columns would
+     * otherwise fail with "no such column" and silently lose the change.
      */
-    private static void ensureBorrowCountColumn(Connection conn) {
+    private static void migrateSchema(Connection conn) {
+        ensureColumn(conn, "borrow_count", "INTEGER NOT NULL DEFAULT 0");
+        ensureColumn(conn, "average_rating", "REAL NOT NULL DEFAULT 0.0");
+        ensureColumn(conn, "rating_count", "INTEGER NOT NULL DEFAULT 0");
+    }
+
+    /**
+     * Adds the given column to the {@code books} table when it is not already
+     * present.
+     *
+     * @param conn       the open database connection
+     * @param columnName the column to ensure exists
+     * @param definition the SQL type/constraints used when the column is added
+     */
+    private static void ensureColumn(Connection conn, String columnName, String definition) {
         boolean columnExists = false;
-        try (Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery("PRAGMA table_info(books)")) {
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("PRAGMA table_info(books)")) {
             while (rs.next()) {
-                if ("borrow_count".equalsIgnoreCase(rs.getString("name"))) {
+                if (columnName.equalsIgnoreCase(rs.getString("name"))) {
                     columnExists = true;
                     break;
                 }
@@ -68,43 +83,12 @@ public class DatabaseConnection {
 
         if (!columnExists) {
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("ALTER TABLE books ADD COLUMN borrow_count INTEGER NOT NULL DEFAULT 0");
-                System.out.println("Migration: Added 'borrow_count' column to books table.");
+                stmt.execute("ALTER TABLE books ADD COLUMN " + columnName + " " + definition);
+                System.out.println("Migration: Added '" + columnName + "' column to books table.");
             } catch (SQLException e) {
-                System.err.println("Database Error: Failed to add 'borrow_count' column. " + e.getMessage());
+                System.err.println("Database Error: Failed to add '" + columnName + "' column. " + e.getMessage());
             }
         }
     }
 
-    private static void ensureRatingColumns(Connection conn) {
-        boolean avgExists = false;
-        boolean countExists = false;
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("PRAGMA table_info(books)")) {
-            while (rs.next()) {
-                String name = rs.getString("name");
-                if ("avg_rating".equalsIgnoreCase(name)) {
-                    avgExists = true;
-                }
-                if ("rating_count".equalsIgnoreCase(name)) {
-                    countExists = true;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Database Error: Failed to inspect books table for rating columns. " + e.getMessage());
-            return;
-        }
-
-        try (Statement stmt = conn.createStatement()) {
-            if (!avgExists) {
-                stmt.execute("ALTER TABLE books ADD COLUMN avg_rating REAL NOT NULL DEFAULT 0.0");
-                System.out.println("Migration: Added 'avg_rating' column to books table.");
-            }
-            if (!countExists) {
-                stmt.execute("ALTER TABLE books ADD COLUMN rating_count INTEGER NOT NULL DEFAULT 0");
-                System.out.println("Migration: Added 'rating_count' column to books table.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Database Error: Failed to add rating columns. " + e.getMessage());
-        }
-    }
 }

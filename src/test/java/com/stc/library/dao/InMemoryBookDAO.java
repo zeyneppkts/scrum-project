@@ -59,7 +59,22 @@ public class InMemoryBookDAO implements IBookRepository {
 
     @Override
     public void deleteByIsbn(String isbn) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteByIsbn'");
+        books.removeIf(book -> book.getIsbn() != null && book.getIsbn().equals(isbn));
+    }
+
+    @Override
+    public List<Book> getTopBorrowedBooks(int limit) {
+        return books.stream()
+                .sorted((b1, b2) -> Integer.compare(b2.getBorrowCount(), b1.getBorrowCount()))
+                .limit(limit)
+                .toList();
+    }
+
+    @Override
+    public List<Book> getTopRatedBooks(int limit) {
+        return books.stream()
+                .sorted((b1, b2) -> Double.compare(b2.getAverageRating(), b1.getAverageRating()))
+                .limit(limit)
+                .toList();
     }
 }

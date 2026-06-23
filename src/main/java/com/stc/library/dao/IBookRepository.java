@@ -1,7 +1,8 @@
 package com.stc.library.dao;
 
-import com.stc.library.model.Book;
 import java.util.List;
+
+import com.stc.library.model.Book;
 
 public interface IBookRepository {
 
@@ -26,6 +27,9 @@ public interface IBookRepository {
     void update(Book book);
 
     Book findByISBN(String isbn);
+
     void updateBook(Book book);
     void deleteByIsbn(String isbn);
+    List<Book> getTopBorrowedBooks(int limit);
+    List<Book> getTopRatedBooks(int limit);
 }

@@ -1,7 +1,10 @@
 package com.stc.library.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class BookTest {
 
@@ -97,21 +100,51 @@ public class BookTest {
 
     @Test
     public void testReturnBookIncreasesCopies() {
-        Book book = new Book("Return Guide", "Author", 2023, 1, "Pub", 5, true, "111222");
-        
-        book.returnABook(3);
-        
-        assertEquals(8, book.getCopyNumber());
+        Book book = new Book("Test Title", "Test Author", 2000, 1, "Test Pub", 5, true, "12345");
+
+        book.borrowABook(1);
+
+        book.returnABook(1);
+
+        assertEquals(5, book.getCopyNumber());
     }
 
     @Test
     public void testReturnBookNegativeCopiesThrowsException() {
         Book book = new Book("Return Guide", "Author", 2023, 1, "Pub", 5, true, "111222");
-        
+
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             book.returnABook(-2);
         });
-        
+
         assertEquals("Number of copies to return must be positive.", exception.getMessage());
+    }
+
+    @Test
+    public void testAddRatingCalculatesAverageCorrectly() {
+        Book book = new Book("Test Statistics Book", "Author", 2023, 1, "Pub", 5, true, "STAT-123");
+
+        book.addRating(4.0);
+
+        assertEquals(4.0, book.getAverageRating(), 0.01);
+        assertEquals(1, book.getRatingCount());
+
+        book.addRating(5.0);
+
+        assertEquals(4.5, book.getAverageRating(), 0.01);
+        assertEquals(2, book.getRatingCount());
+    }
+
+    @Test
+    public void testAddRatingThrowsExceptionForInvalidInput() {
+        Book book = new Book("Test Invalid Rating", "Author", 2023, 1, "Pub", 5, true, "STAT-456");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            book.addRating(6.0);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            book.addRating(-1.0);
+        });
     }
 }

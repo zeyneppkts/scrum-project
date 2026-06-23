@@ -1,9 +1,13 @@
 package com.stc.library.controller;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import com.stc.library.dao.IBookRepository;
 import com.stc.library.dao.SQLiteBookDAO;
 import com.stc.library.model.Book;
 import com.stc.library.service.BorrowService;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -20,10 +24,6 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
-
-
-import java.io.IOException;
-import java.util.Optional;
 
 public class ListBooksController {
 
@@ -69,7 +69,7 @@ public class ListBooksController {
         refreshTable();
     }
 
-    private void refreshTable() {
+    public void refreshTable() {
         ObservableList<Book> books = FXCollections.observableArrayList(repository.findAll());
         bookTable.setItems(books);
     }
@@ -88,8 +88,8 @@ public class ListBooksController {
             refreshTable();
             showAlert(Alert.AlertType.INFORMATION, "Success",
                     "You borrowed \"" + updatedBook.getTitle() + "\".\n"
-                            + "Remaining copies: " + updatedBook.getCopyNumber() + "\n"
-                            + "Total times borrowed: " + updatedBook.getBorrowCount());
+                    + "Remaining copies: " + updatedBook.getCopyNumber() + "\n"
+                    + "Total times borrowed: " + updatedBook.getBorrowCount());
         } catch (IllegalArgumentException e) {
             showAlert(Alert.AlertType.ERROR, "Borrow Error", e.getMessage());
         }
